@@ -377,8 +377,18 @@ export default function HomePage() {
       {/* ═══════════════════════════════════════
           PROMO BANNER
       ═══════════════════════════════════════ */}
-      <section style={{ background: 'var(--dark)', padding: 'clamp(48px, 8vw, 80px) 0' }}>
-        <div className="container" style={{ textAlign: 'center' }}>
+      <section style={{ 
+        position: 'relative', 
+        padding: 'clamp(48px, 8vw, 80px) 0', 
+        backgroundImage: 'url(/images/promo-bg-v2.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        overflow: 'hidden',
+        backgroundColor: '#1a1a1a'
+      }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7))' }} />
+        <div className="container" style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>
             Limited Time Offer
           </div>
@@ -386,7 +396,7 @@ export default function HomePage() {
             Free Delivery on Orders<br />
             <span style={{ color: 'var(--gold)' }}>Above Rs. 2,000</span>
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, marginBottom: 36 }}>
+          <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 16, marginBottom: 36 }}>
             Shop your favorite styles and get free delivery across Pakistan
           </p>
           <Link href="/categories" className="btn btn-gold btn-lg">

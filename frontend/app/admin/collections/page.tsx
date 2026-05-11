@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import AdminSidebar from '@/components/admin/AdminSidebar'
-import { Plus, Search, Loader2, Edit2, Trash2, Check, X, Star } from 'lucide-react'
+import { Plus, Search, Loader2, Edit2, Trash2, Check, X, Star, Image as ImageIcon } from 'lucide-react'
 import { toast } from '@/lib/toast'
+import Image from 'next/image'
 
 interface Collection {
   id: string; title: string; slug: string; description: string;
@@ -20,6 +21,7 @@ export default function AdminCollectionsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<Partial<Collection>>({})
   const [isAdding, setIsAdding] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     if (profile?.is_admin) fetchCollections()
@@ -64,6 +66,35 @@ export default function AdminCollectionsPage() {
       setEditingId(null)
       setIsAdding(false)
       fetchCollections()
+    }
+  }
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0]
+      if (!file) return
+
+      setUploading(true)
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random()}.${fileExt}`
+      const filePath = `collections/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('products') // Using products bucket as a general storage if collections doesn't exist
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('products')
+        .getPublicUrl(filePath)
+
+      setFormData({ ...formData, image_url: publicUrl })
+      toast.success('Image uploaded successfully')
+    } catch (error: any) {
+      toast.error(error.message || 'Error uploading image')
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -161,8 +192,38 @@ export default function AdminCollectionsPage() {
                   <textarea className="form-input" value={formData.description || ''} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="Short description..." rows={2} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Image URL</label>
-                  <input className="form-input" value={formData.image_url || ''} onChange={e => setFormData({ ...formData, image_url: e.target.value })} placeholder="https://..." />
+                  <label className="form-label">Image</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div style={{ position: 'relative', height: 160, width: '100%', background: 'var(--bg-secondary)', borderRadius: 12, border: '1px dashed var(--border)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {formData.image_url ? (
+                        <Image src={formData.image_url} alt="Preview" fill style={{ objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                          <ImageIcon size={32} style={{ marginBottom: 8, opacity: 0.5 }} />
+                          <p style={{ fontSize: 12 }}>No image selected</p>
+                        </div>
+                      )}
+                      {uploading && (
+                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                          <Loader2 size={24} className="animate-spin" style={{ color: 'var(--gold)' }} />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <label className="btn btn-outline" style={{ flex: 1, cursor: 'pointer', fontSize: 13 }}>
+                        {uploading ? 'Uploading...' : 'Choose File'}
+                        <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} style={{ display: 'none' }} />
+                      </label>
+                      <input 
+                        className="form-input" 
+                        style={{ flex: 2 }}
+                        value={formData.image_url || ''} 
+                        onChange={e => setFormData({ ...formData, image_url: e.target.value })} 
+                        placeholder="Or paste URL..." 
+                      />
+                    </div>
+                  </div>
                 </div>
                 
                 <div style={{ display: 'flex', gap: 20 }}>
