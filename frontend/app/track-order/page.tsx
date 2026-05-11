@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Search, Loader2, Package, CheckCircle, Truck, MapPin, Clock, AlertCircle } from 'lucide-react'
 
-export default function TrackOrderPage() {
+function TrackOrderContent() {
   const searchParams = useSearchParams()
   const orderNumParam = searchParams.get('order')
   
@@ -167,5 +167,13 @@ export default function TrackOrderPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function TrackOrderPage() {
+  return (
+    <Suspense fallback={<div className="container section" style={{ textAlign: 'center' }}><Loader2 size={32} className="animate-spin" style={{ color: 'var(--gold)' }} /></div>}>
+      <TrackOrderContent />
+    </Suspense>
   )
 }
