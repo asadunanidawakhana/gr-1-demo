@@ -8,7 +8,9 @@ import { Plus, Edit, Trash2, Search, Loader2, X, Image as ImageIcon } from 'luci
 import { toast } from '@/lib/toast'
 
 interface Product {
-  id: string; name: string; slug: string; price: number; stock: number;
+  id: string; name: string; slug: string; description?: string; price: number; 
+  compare_price?: number | null; category_id?: string | null; stock: number;
+  sizes?: string[]; colors?: string[]; tags?: string[];
   is_active: boolean; is_featured: boolean; is_best_seller: boolean;
   images: string[]; categories?: { name: string }[] | null; created_at: string
 }
@@ -42,7 +44,7 @@ export default function AdminProductsPage() {
   async function fetchData() {
     setFetching(true)
     const [pRes, cRes] = await Promise.all([
-      supabase.from('products').select('id,name,slug,price,stock,is_active,is_featured,is_best_seller,images,categories(name),created_at').order('created_at', { ascending: false }),
+      supabase.from('products').select('id,name,slug,description,price,compare_price,category_id,stock,sizes,colors,tags,is_active,is_featured,is_best_seller,images,categories(name),created_at').order('created_at', { ascending: false }),
       supabase.from('categories').select('id,name').eq('is_active', true).order('sort_order')
     ])
     setProducts(pRes.data || [])
