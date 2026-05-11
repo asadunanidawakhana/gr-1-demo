@@ -7,6 +7,8 @@ import { useAuth } from '@/lib/auth-context'
 import { useRouter } from 'next/navigation'
 import { CheckCircle, Loader2 } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
+import { motion } from 'framer-motion'
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart()
