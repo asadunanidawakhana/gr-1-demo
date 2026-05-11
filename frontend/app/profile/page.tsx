@@ -33,9 +33,9 @@ export default function ProfilePage() {
   // Sync profile form when profile loads
   useEffect(() => {
     if (profile) {
-      setProfileForm({ 
-        full_name: profile.full_name || '', 
-        phone: profile.phone || '' 
+      setProfileForm({
+        full_name: profile.full_name || '',
+        phone: profile.phone || ''
       })
     }
   }, [profile])
