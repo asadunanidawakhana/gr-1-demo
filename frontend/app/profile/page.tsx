@@ -20,7 +20,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<Tab>('profile')
   const [orders, setOrders] = useState<Order[]>([])
   const [ordersLoaded, setOrdersLoaded] = useState(false)
-  const [profileForm, setProfileForm] = useState({ full_name: profile?.full_name || '', phone: profile?.phone || '' })
+  const [profileForm, setProfileForm] = useState({ full_name: '', phone: '' })
   const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' })
   const [saving, setSaving] = useState(false)
 
@@ -33,9 +33,14 @@ export default function ProfilePage() {
   // Sync profile form when profile loads
   useEffect(() => {
     if (profile) {
-      setProfileForm({
-        full_name: profile.full_name || '',
-        phone: profile.phone || ''
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setProfileForm(prev => {
+        const next = { 
+          full_name: profile.full_name || '', 
+          phone: profile.phone || '' 
+        }
+        if (prev.full_name === next.full_name && prev.phone === next.phone) return prev
+        return next
       })
     }
   }, [profile])
@@ -50,8 +55,12 @@ export default function ProfilePage() {
 
   const handleTabChange = async (tab: Tab) => {
     setActiveTab(tab)
-    if (tab === 'orders' && !ordersLoaded) {
-      const { data } = await supabase.from('orders').select('id,order_number,status,total,created_at,items').eq('user_id', user.id).order('created_at', { ascending: false })
+    if (tab === 'orders' && !ordersLoaded && user) {
+      const { data } = await supabase
+        .from('orders')
+        .select('id,order_number,status,total,created_at,items')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
       setOrders(data || [])
       setOrdersLoaded(true)
     }
@@ -94,11 +103,11 @@ export default function ProfilePage() {
         <div className="container">
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 700, color: '#fff', fontFamily: 'var(--font-heading)' }}>
-              {profile?.full_name?.[0] || user.email?.[0]?.toUpperCase() || 'U'}
+              {profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
             </div>
             <div>
               <h1 style={{ color: '#fff', fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 700 }}>{profile?.full_name || 'My Account'}</h1>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>{user.email}</p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>{user?.email}</p>
             </div>
           </div>
         </div>
@@ -149,7 +158,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Email</label>
-                    <input className="form-input" value={user.email || ''} disabled style={{ opacity: 0.6, cursor: 'not-allowed' }} />
+                    <input className="form-input" value={user?.email || ''} disabled style={{ opacity: 0.6, cursor: 'not-allowed' }} />
                   </div>
                   <button onClick={handleSaveProfile} className="btn btn-primary" disabled={saving} style={{ width: 'fit-content' }}>
                     {saving ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : 'Save Changes'}
@@ -178,7 +187,7 @@ export default function ProfilePage() {
                           </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                          <span className={`badge badge-${order.status}`}>{order.status.replace(/_/g, ' ')}</span>
+                          <span className={`badge badge-${order.status || 'pending'}`}>{(order.status || 'pending').replace(/_/g, ' ')}</span>
                           <div style={{ fontWeight: 700 }}>Rs. {order.total.toLocaleString()}</div>
                           <Link href={`/track-order?order=${order.order_number}`} className="btn btn-outline btn-sm">Track</Link>
                         </div>
